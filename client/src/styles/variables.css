@@ -1,0 +1,24 @@
+:root {
+
+  /* Background */
+  --bg-top: #0B1413;
+  --bg-mid: #0F1E1C;
+  --bg-bottom: #132926;
+
+  /* Glass */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
+  /* Accent */
+  --forest-primary: #10B981;
+  --forest-secondary: #34D399;
+  --danger: #EF4444;
+
+  /* Text */
+  --text-primary: #ECFDF5;
+  --text-secondary: #A7F3D0;
+  --text-muted: #6EE7B7;
+
+  /* Shadows */
+  --shadow-heavy: 0 10px 40px rgba(0,0,0,0.35);
+}
