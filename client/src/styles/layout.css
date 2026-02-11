@@ -1,8 +1,18 @@
 .section {
-  padding: 120px 80px;
+  padding: 140px 80px;
 }
 
 .container {
   max-width: 1200px;
-  margin: auto;
+  margin: 0 auto;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.text-center {
+  text-align: center;
 }

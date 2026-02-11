@@ -11,13 +11,37 @@ export default function useWebRTC(roomId) {
 
   const localStreamRef = useRef(null);
   const peerConnectionRef = useRef(null);
-
   const hasInitialized = useRef(false);
 
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
 
+  /* -------------------- CLEANUP FUNCTION -------------------- */
+
+  function cleanup() {
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) =>
+        track.stop()
+      );
+      localStreamRef.current = null;
+    }
+
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = null;
+    }
+
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = null;
+    }
+  }
+
   /* -------------------- INIT -------------------- */
+
   useEffect(() => {
     if (hasInitialized.current) return;
     hasInitialized.current = true;
@@ -35,7 +59,8 @@ export default function useWebRTC(roomId) {
           localVideoRef.current.srcObject = stream;
         }
 
-        peerConnectionRef.current = new RTCPeerConnection(configuration);
+        peerConnectionRef.current =
+          new RTCPeerConnection(configuration);
 
         stream.getTracks().forEach((track) => {
           peerConnectionRef.current.addTrack(track, stream);
@@ -56,7 +81,13 @@ export default function useWebRTC(roomId) {
           }
         };
 
-        socket.emit("join-room", roomId);
+        if (socket.connected) {
+          socket.emit("join-room", roomId);
+        } else {
+          socket.on("connect", () => {
+            socket.emit("join-room", roomId);
+          });
+        }
 
       } catch (err) {
         console.error("WebRTC init error:", err);
@@ -66,16 +97,7 @@ export default function useWebRTC(roomId) {
     init();
 
     return () => {
-      if (peerConnectionRef.current) {
-        peerConnectionRef.current.close();
-      }
-
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((track) =>
-          track.stop()
-        );
-      }
-
+      cleanup();
       socket.off("user-joined");
       socket.off("offer");
       socket.off("answer");
@@ -85,20 +107,19 @@ export default function useWebRTC(roomId) {
   }, [roomId]);
 
   /* -------------------- SIGNALING -------------------- */
+
   useEffect(() => {
     socket.on("user-joined", async () => {
       const offer = await peerConnectionRef.current.createOffer();
       await peerConnectionRef.current.setLocalDescription(offer);
-
       socket.emit("offer", { offer, roomId });
     });
 
     socket.on("offer", async (offer) => {
       await peerConnectionRef.current.setRemoteDescription(offer);
-
-      const answer = await peerConnectionRef.current.createAnswer();
+      const answer =
+        await peerConnectionRef.current.createAnswer();
       await peerConnectionRef.current.setLocalDescription(answer);
-
       socket.emit("answer", { answer, roomId });
     });
 
@@ -118,10 +139,6 @@ export default function useWebRTC(roomId) {
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = null;
       }
-
-      if (peerConnectionRef.current) {
-        peerConnectionRef.current.close();
-      }
     });
   }, [roomId]);
 
@@ -129,21 +146,17 @@ export default function useWebRTC(roomId) {
 
   function toggleMute() {
     if (!localStreamRef.current) return;
-
     localStreamRef.current.getAudioTracks().forEach((track) => {
       track.enabled = !track.enabled;
     });
-
     setIsMuted((prev) => !prev);
   }
 
   function toggleVideo() {
     if (!localStreamRef.current) return;
-
     localStreamRef.current.getVideoTracks().forEach((track) => {
       track.enabled = !track.enabled;
     });
-
     setIsVideoOff((prev) => !prev);
   }
 
@@ -154,5 +167,6 @@ export default function useWebRTC(roomId) {
     isVideoOff,
     toggleMute,
     toggleVideo,
+    cleanup, // 🔥 exposed
   };
 }

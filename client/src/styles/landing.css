@@ -1,0 +1,131 @@
+/* ================= HERO ================= */
+
+.hero-section {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 0 40px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.hero-content {
+  max-width: 850px;
+  z-index: 2;
+}
+
+.hero-content h1 {
+  font-size: 64px;
+  line-height: 1.1;
+  margin-bottom: 28px;
+  background: linear-gradient(90deg, #ECFDF5, #A7F3D0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-content p {
+  font-size: 20px;
+  margin-bottom: 50px;
+  color: var(--text-secondary);
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+}
+
+/* ================= BUTTONS ================= */
+
+.primary-btn {
+  background: var(--forest-primary);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.secondary-btn {
+  padding: 16px 32px;
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* ================= HERO MOCKUP ================= */
+
+.hero-mockup {
+  position: absolute;
+  width: 700px;
+  height: 420px;
+  border-radius: 32px;
+  opacity: 0.18;
+  transform: rotate(-8deg);
+  box-shadow: 0 0 60px rgba(16,185,129,0.15);
+}
+
+/* ================= JOIN MODAL ================= */
+.hero-buttons a {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.join-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.join-box {
+  width: 90%;
+  max-width: 400px;
+  padding: 40px;
+  border-radius: 28px;
+  text-align: center;
+}
+
+.join-box input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  margin-bottom: 24px;
+  background: rgba(255,255,255,0.06);
+  color: white;
+}
+
+/* ================= MOBILE RESPONSIVE ================= */
+
+@media (max-width: 768px) {
+
+  .hero-content h1 {
+    font-size: 36px;
+  }
+
+  .hero-content p {
+    font-size: 16px;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero-mockup {
+    display: none;
+  }
+
+}
