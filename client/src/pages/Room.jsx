@@ -3,7 +3,7 @@ import useWebRTC from "../hooks/useWebRTC";
 
 export default function Room() {
   const { roomId } = useParams();
-  const { localVideoRef } = useWebRTC(roomId);
+  const { localVideoRef, remoteVideoRef } = useWebRTC(roomId);
 
   return (
     <div
@@ -12,6 +12,7 @@ export default function Room() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        gap: "40px"
       }}
     >
       <video
@@ -20,7 +21,15 @@ export default function Room() {
         muted
         playsInline
         className="glass"
-        style={{ width: "500px" }}
+        style={{ width: "400px" }}
+      />
+
+      <video
+        ref={remoteVideoRef}
+        autoPlay
+        playsInline
+        className="glass"
+        style={{ width: "400px" }}
       />
     </div>
   );
