@@ -6,7 +6,7 @@ require("dotenv").config();
 
 const app = express();
 
-// CORS configuration
+/* -------------------- CORS -------------------- */
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
@@ -14,14 +14,15 @@ app.use(
   })
 );
 
-// Basic route
+/* -------------------- Basic Route -------------------- */
 app.get("/", (req, res) => {
   res.send("StreamMeet Signaling Server Running");
 });
 
+/* -------------------- HTTP Server -------------------- */
 const server = http.createServer(app);
 
-// Socket.io setup
+/* -------------------- Socket.io Setup -------------------- */
 const io = new Server(server, {
   cors: {
     origin: process.env.CLIENT_URL,
@@ -29,11 +30,15 @@ const io = new Server(server, {
   },
 });
 
+/* -------------------- Socket Logic -------------------- */
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
+  /* ---------- Join Room ---------- */
   socket.on("join-room", (roomId) => {
     socket.join(roomId);
+    socket.roomId = roomId; // store roomId on socket instance
+
     console.log(`User ${socket.id} joined room ${roomId}`);
 
     const clients = io.sockets.adapter.rooms.get(roomId);
@@ -41,32 +46,52 @@ io.on("connection", (socket) => {
 
     console.log(`Room ${roomId} has ${numberOfClients} client(s)`);
 
-    // Notify existing user if someone joins
     if (numberOfClients > 1) {
       socket.to(roomId).emit("user-joined", socket.id);
     }
+  });
 
-    // Forward offer
-    socket.on("offer", ({ offer, roomId }) => {
-      socket.to(roomId).emit("offer", offer);
-    });
+  /* ---------- WebRTC Signaling ---------- */
 
-    // Forward answer
-    socket.on("answer", ({ answer, roomId }) => {
-      socket.to(roomId).emit("answer", answer);
-    });
+  socket.on("offer", ({ offer, roomId }) => {
+    socket.to(roomId).emit("offer", offer);
+  });
 
-    // Forward ICE candidates
-    socket.on("ice-candidate", ({ candidate, roomId }) => {
-      socket.to(roomId).emit("ice-candidate", candidate);
-    });
+  socket.on("answer", ({ answer, roomId }) => {
+    socket.to(roomId).emit("answer", answer);
+  });
 
-    socket.on("disconnect", () => {
-      console.log("User disconnected:", socket.id);
-      socket.to(roomId).emit("user-left", socket.id);
+  socket.on("ice-candidate", ({ candidate, roomId }) => {
+    socket.to(roomId).emit("ice-candidate", candidate);
+  });
+
+  /* ---------- Chat (Phase 3) ---------- */
+
+  socket.on("chat-message", ({ message, roomId }) => {
+    socket.to(roomId).emit("chat-message", {
+      message,
+      sender: socket.id,
     });
   });
+
+  /* ---------- File Sharing (Phase 3) ---------- */
+
+  socket.on("file-share", ({ file, roomId }) => {
+    socket.to(roomId).emit("file-share", file);
+  });
+
+  /* ---------- Disconnect Handling ---------- */
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+
+    if (socket.roomId) {
+      socket.to(socket.roomId).emit("user-left", socket.id);
+    }
+  });
 });
+
+/* -------------------- Start Server -------------------- */
 
 const PORT = process.env.PORT || 5000;
 
